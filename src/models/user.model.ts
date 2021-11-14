@@ -1,18 +1,18 @@
-import { ObjectId } from "mongodb";
-import { Permission, Role } from "./permissions.model";
+import { ObjectId } from 'mongodb';
+import { Permission, Role } from './permissions.model';
 
 export interface UserId {
-	_id: string;
+  _id: string;
 }
 
 export interface UserClaim extends UserId {
-	name: string;
-	hierarchy: string;
+  name: string;
+  hierarchy: string;
 }
 
 export interface User extends UserClaim {
-	isAdmin: boolean;
-	organizationId: ObjectId;
+  isAdmin: boolean;
+  organizationId: ObjectId;
 }
 
 export type UserWithPermission = UserId & { permission: Permission };

@@ -3,6 +3,5 @@ import { MissionsRepository } from './missions.repository';
 
 @Injectable()
 export class MissionsService {
-    constructor(private repository: MissionsRepository) { }
-    
+  constructor(private repository: MissionsRepository) {}
 }

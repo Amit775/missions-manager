@@ -5,13 +5,8 @@ import { MissionsRepository } from './missions.repository';
 import { MissionsService } from './missions.service';
 
 @Module({
-    imports: [DatabaseModule.forFeature('missions')],
-    controllers: [
-        MissionsController,
-    ],
-    providers: [
-        MissionsService, 
-        MissionsRepository
-    ]
+  imports: [DatabaseModule.forFeature('missions')],
+  controllers: [MissionsController],
+  providers: [MissionsService, MissionsRepository],
 })
 export class MissionsModule {}

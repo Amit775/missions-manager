@@ -1,5 +1,5 @@
 export enum State {
-    CREATED = "CREATED",
-    UPDATED = "UPDATED",
-    DELETED = "DELETED"
+  CREATED = 'CREATED',
+  UPDATED = 'UPDATED',
+  DELETED = 'DELETED',
 }
