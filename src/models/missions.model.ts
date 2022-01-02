@@ -8,7 +8,7 @@ export interface BaseMission {
   description: string;
 }
 
-export interface Mission {
+export interface Mission extends BaseMission {
   _id: ObjectId;
   users: UserWithPermission[];
   creator: string;
@@ -17,5 +17,4 @@ export interface Mission {
   joinRequests: string[];
   state: State;
   sequence: number;
-  isExported: boolean;
 }
