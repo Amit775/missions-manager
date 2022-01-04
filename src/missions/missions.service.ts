@@ -47,7 +47,16 @@ export class MissionsService {
 		});
 	}
 
-	public createMission(mission: Mission): Observable<Mission> {
+	public createMission(baseMission: BaseMission): Observable<Mission> {
+		const mission: Mission = {
+			...baseMission,
+			_id: null,
+			users: [],
+			joinRequests: [],
+			createdTime: new Date(),
+			updatedTime: new Date(),
+			creator: 'creator'
+		}
 		return this.repository.createOne$(mission);
 	}
 

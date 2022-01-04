@@ -7,16 +7,14 @@ import { GroupsModule } from './groups/groups.module';
 import { DatabaseModule } from './database/database.module';
 
 @Module({
-  imports: [
-    MissionsModule,
-    UsersModule,
-    GroupsModule,
-    DatabaseModule.forRoot({
-      uri: 'mongodb+srv://AmitBublil:z^/um2C-y?q-@YE@missionary.ms1yx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
-      name: 'Missionary',
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		DatabaseModule.forRoot({
+			uri: 'mongodb+srv://bublil:bublil@missions-manager.akbe9.mongodb.net/missions-manager?authSource=admin&replicaSet=atlas-s1148w-shard-0&w=majority&readPreference=primary&appname=mongodb-vscode%200.7.0&retryWrites=true&ssl=true',
+			name: 'missions-manager',
+		}),
+		MissionsModule,
+		// UsersModule,
+		// GroupsModule,
+	]
 })
-export class AppModule {}
+export class AppModule { }

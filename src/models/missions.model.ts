@@ -15,6 +15,4 @@ export interface Mission extends BaseMission {
   createdTime: Date;
   updatedTime: Date;
   joinRequests: string[];
-  state: State;
-  sequence: number;
 }

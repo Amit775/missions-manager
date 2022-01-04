@@ -37,6 +37,10 @@ export class GroupsService {
 		return this.repository.updateOne$(groupId, { $pull: { users: { _id: userId } } });
 	}
 
+	public acceptJoinRequest(groupId: ObjectId, user: UserWithRole): Observable<boolean> {
+		return this.repository.updateOne$(groupId, { $push: { users: user }, $pull: { joinRequests: user._id } });
+	}
+
 	public addUserToJoinRequest(groupId: ObjectId, userId: string): Observable<boolean> {
 		return this.repository.updateOne$(groupId, { $push: { joinRequests: userId } });
 	}
