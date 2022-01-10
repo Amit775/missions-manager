@@ -10,11 +10,11 @@ export class GroupsService {
 	constructor(private repository: BaseRepository<Group>) { }
 
 	public getAllGroups(): Observable<Group[]> {
-		return this.repository.findMany$();
+		return this.repository.find$();
 	}
 
 	public getGroupOfUser(userId: string): Observable<Group[]> {
-		return this.repository.findMany$({ users: { $all: [{ $elemMatch: userId }] } });
+		return this.repository.find$({ users: { $all: [{ $elemMatch: userId }] } });
 	}
 
 	public getGroupById(groupId: ObjectId): Observable<Group> {

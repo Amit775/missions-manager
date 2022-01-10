@@ -9,15 +9,15 @@ export class UsersService {
 	constructor(private repository: BaseRepository<User, string>) { }
 
 	public getAllUsers(): Observable<User[]> {
-		return this.repository.findMany$();
+		return this.repository.find$();
 	}
 
 	public getUsers(skip: number, limit: number): Observable<User[]> {
-		return this.repository.findMany$({}, { skip, limit });
+		return this.repository.find$({}, { skip, limit });
 	}
 
 	public findUsersByName(query: RegExp): Observable<User[]> {
-		return this.repository.findMany$({ name: { $regex: query } });
+		return this.repository.find$({ name: { $regex: query } });
 	}
 
 	public getUserById(userId: string): Observable<User> {
@@ -25,7 +25,7 @@ export class UsersService {
 	}
 
 	public getUsersByIds(usersIds: string[]): Observable<User[]> {
-		return this.repository.findMany$({ _id: { $in: usersIds } })
+		return this.repository.find$({ _id: { $in: usersIds } })
 	}
 
 	public setOrganization(userId: string, organizationId: ObjectId): Observable<boolean> {
@@ -39,5 +39,4 @@ export class UsersService {
 	public createUser(user: User): Observable<User> {
 		return this.repository.createOne$(user);
 	}
-
 }

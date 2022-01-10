@@ -1,6 +1,4 @@
 import { ObjectId } from 'mongodb';
-
-import { State } from './state.model';
 import { UserWithPermission } from './user.model';
 
 export interface BaseMission {

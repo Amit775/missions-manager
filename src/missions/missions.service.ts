@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { map, Observable, switchMap } from 'rxjs';
+import { NotFoundError } from 'src/models/errors/error.model';
 import { BaseMission, Mission } from 'src/models/missions.model';
 import { Permission } from 'src/models/permissions.model';
+import { UserWithPermission } from 'src/models/user.model';
 import { BaseRepository } from '../database/base.repository';
 
 @Injectable()
@@ -10,7 +12,7 @@ export class MissionsService {
 	constructor(private repository: BaseRepository<Mission>) { }
 
 	public getAllMissions(): Observable<Mission[]> {
-		return this.repository.findMany$();
+		return this.repository.find$();
 	}
 
 	public getMissionById(id: ObjectId): Observable<Mission> {
@@ -18,12 +20,12 @@ export class MissionsService {
 	}
 
 	public getMissionsByIds(ids: ObjectId[]): Observable<Mission[]> {
-		return this.repository.findMany$({ _id: { $in: ids } });
+		return this.repository.find$({ _id: { $in: ids } });
 	}
 
 	public getAllMissionsNames(): Observable<string[]> {
 		return this.repository
-			.findMany$()
+			.find$()
 			.pipe(map((missions) => missions.map((mission) => mission.name)));
 	}
 
@@ -35,14 +37,20 @@ export class MissionsService {
 			.findOne$(missionId)
 			.pipe(
 				map(
-					(mission) =>
-						mission.users.find((user) => user._id === userId).permission,
+					(mission) => {
+						if (!mission) throw new NotFoundError(`mission with id ${missionId}`);
+
+						const userInMission = mission.users.find((user) => user._id === userId);
+						if (!userInMission) return Permission.NONE;
+
+						return userInMission.permission
+					}
 				),
 			);
 	}
 
 	public getAllMissionsOfUser(userId: string): Observable<Mission[]> {
-		return this.repository.findMany$({
+		return this.repository.find$({
 			users: { $all: [{ $elemMatch: { _id: userId } }] },
 		});
 	}
@@ -60,57 +68,34 @@ export class MissionsService {
 		return this.repository.createOne$(mission);
 	}
 
-	public updateBaseMission(
-		missionId: ObjectId,
-		baseMission: BaseMission,
-	): Observable<boolean> {
+	public updateBaseMission(missionId: ObjectId, baseMission: Partial<BaseMission>): Observable<boolean> {
 		Object.keys(baseMission).forEach(
-			(key: string) =>
-				baseMission[key] === undefined && delete baseMission[key],
+			(key: string) => baseMission[key] === undefined && delete baseMission[key],
 		);
 		return this.repository.updateOne$(missionId, { $set: baseMission });
 	}
 
-	public addToJoinRequests(
-		missionId: ObjectId,
-		userId: string,
-	): Observable<boolean> {
-		return this.repository.updateOne$(missionId, {
-			$addToSet: { joinRequests: userId },
-		});
+	public addToJoinRequests(missionId: ObjectId, userId: string): Observable<boolean> {
+		return this.repository.updateOne$(missionId, { $addToSet: { joinRequests: userId } });
 	}
 
-	public removeFromJoinRequests(
-		missionId: ObjectId,
-		userId: string,
-	): Observable<boolean> {
-		return this.repository.updateOne$(missionId, {
-			$pull: { joinRequests: userId },
-		});
+	public removeFromJoinRequests(missionId: ObjectId, userId: string): Observable<boolean> {
+		return this.repository.updateOne$(missionId, { $pull: { joinRequests: userId } });
 	}
 
-	public addUserToMission(
-		missionId: ObjectId,
-		userId: string,
-		permission: Permission,
-	): Observable<boolean> {
-		return this.repository.updateOne$(missionId, {
-			$addToSet: { users: { _id: userId, permission } },
-		});
+	public acceptJoinRequest(missionId: ObjectId, user: UserWithPermission): Observable<boolean> {
+		return this.repository.updateOne$(missionId, { $pull: { joinRequests: user._id }, $addToSet: { users: user } });
 	}
 
-	public removeUserFromMission(
-		missionId: ObjectId,
-		userId: string,
-	): Observable<boolean> {
-		return this.repository.updateOne$(missionId, {
-			$pull: { users: { _id: userId } },
-		});
+	public addUserToMission(missionId: ObjectId, user: UserWithPermission,): Observable<boolean> {
+		return this.repository.update$({ _id: missionId, users: { $not: { $elemMatch: { _id: user._id } } } }, { $addToSet: { users: user }, });
 	}
 
-	public changeUserPermission(missionId: ObjectId, userId: string, permission: Permission): Observable<boolean> {
-		return this.repository.updateOne$(missionId, { $pull: { users: { _id: userId } } }).pipe(
-			switchMap(() => this.repository.updateOne$(missionId, { $push: { users: { _id: userId, permission } } }))
-		);
+	public removeUserFromMission(missionId: ObjectId, userId: string): Observable<boolean> {
+		return this.repository.updateOne$(missionId, { $pull: { users: { _id: userId } } });
+	}
+
+	public updateUserPermission(missionId: ObjectId, user: UserWithPermission): Observable<boolean> {
+		return this.repository.updateOne$(missionId, { $pull: { users: { _id: user._id } }, $addToSet: { users: user } });
 	}
 }

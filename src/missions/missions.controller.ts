@@ -1,8 +1,9 @@
-import { Body, Controller, createParamDecorator, ExecutionContext, Get, Param, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, createParamDecorator, ExecutionContext, Get, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { Observable, switchMap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BaseMission, Mission } from 'src/models/missions.model';
 import { Permission } from 'src/models/permissions.model';
+import { UserWithPermission } from 'src/models/user.model';
 import { MissionsService } from './missions.service';
 
 const MissionId = createParamDecorator(
@@ -68,7 +69,7 @@ export class MissionsController {
 	}
 
 	@Put(':id/')
-	updateMission(@MissionId() missionId: ObjectId, @Body() baseMission: BaseMission): Observable<boolean> {
+	updateMission(@MissionId() missionId: ObjectId, @Body() baseMission: Partial<BaseMission>): Observable<boolean> {
 		return this.service.updateBaseMission(missionId, baseMission);
 	}
 
@@ -78,10 +79,8 @@ export class MissionsController {
 	}
 
 	@Put(':id/accept-join-request')
-	acceptJoinRequest(@MissionId() missionId: ObjectId, @Query('userId') userId: string, @Query('permission') permission: Permission = Permission.READ): Observable<boolean> {
-		return this.service.removeFromJoinRequests(missionId, userId).pipe(
-			switchMap(() => this.service.addUserToMission(missionId, userId, permission))
-		);
+	acceptJoinRequest(@MissionId() missionId: ObjectId, @Body() userWithPermission: UserWithPermission): Observable<boolean> {
+		return this.service.acceptJoinRequest(missionId, userWithPermission);
 	}
 
 	@Put(':id/remove-user')
@@ -90,12 +89,12 @@ export class MissionsController {
 	}
 
 	@Put(':id/add-user')
-	addUserToMission(@MissionId() missionId: ObjectId, @Query('userId') userId: string, @Query('permission') permission: Permission): Observable<boolean> {
-		return this.service.addUserToMission(missionId, userId, permission);
+	addUserToMission(@MissionId() missionId: ObjectId, @Body() userWithPermission: UserWithPermission): Observable<boolean> {
+		return this.service.addUserToMission(missionId, userWithPermission);
 	}
 
 	@Put(':id/change-user-permission')
-	changeUserPermission(@MissionId() missionId: ObjectId, @Query('userId') userId: string, @Query('permission') permission: Permission): Observable<boolean> {
-		return this.service.changeUserPermission(missionId, userId, permission);
+	changeUserPermission(@MissionId() missionId: ObjectId, @Body() userWithPermission: UserWithPermission): Observable<boolean> {
+		return this.service.updateUserPermission(missionId, userWithPermission);
 	}
 }
