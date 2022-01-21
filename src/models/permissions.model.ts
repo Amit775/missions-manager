@@ -1,11 +1,12 @@
-export enum Permission {
-  NONE = 'NONE',
-  READ = 'READ',
-  WRITE = 'WRITE',
-  ADMIN = 'ADMIN',
+export enum PERMISSION {
+	NONE = 'NONE',
+	READ = 'READ',
+	WRITE = 'WRITE',
+	ADMIN = 'ADMIN',
 }
-export enum Role {
-  NONE = 'NONE',
-  MEMBER = 'MEMBER',
-  ADMIN = 'ADMIN',
+
+export enum ROLE {
+	NONE = 'NONE',
+	MEMBER = 'MEMBER',
+	ADMIN = 'ADMIN',
 }

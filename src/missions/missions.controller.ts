@@ -1,19 +1,18 @@
-import { Body, Controller, createParamDecorator, ExecutionContext, Get, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, createParamDecorator, ExecutionContext, Get, ParseArrayPipe, Post, Put, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Observable } from 'rxjs';
 import { BaseMission, Mission } from 'src/models/missions.model';
-import { Permission } from 'src/models/permissions.model';
+import { PERMISSION } from 'src/models/permissions.model';
 import { UserWithPermission } from 'src/models/user.model';
 import { MissionsService } from './missions.service';
 
-const MissionId = createParamDecorator(
-	(data: unknown, context: ExecutionContext) => {
-		const request = context.switchToHttp().getRequest();
-		const { id: missionId } = request.params;
+const MissionId = createParamDecorator((data: unknown, context: ExecutionContext) => {
+	const request = context.switchToHttp().getRequest();
+	const { id: missionId } = request.params;
 
-		return new ObjectId(missionId);
-	}
-)
+	return new ObjectId(missionId);
+});
+
 @Controller('missions')
 export class MissionsController {
 	constructor(private service: MissionsService) { }
@@ -40,7 +39,8 @@ export class MissionsController {
 
 	@Post('/')
 	createMission(@Body() baseMission: BaseMission): Observable<Mission> {
-		return this.service.createMission(baseMission);
+		const { name, description } = baseMission;
+		return this.service.createMission({ name, description });
 	}
 
 	@Get(':id/')
@@ -49,7 +49,7 @@ export class MissionsController {
 	}
 
 	@Get(':id/permission-of-user')
-	getPermissionsofUser(@MissionId() missionId: ObjectId, @Query('userId') userId: string): Observable<Permission> {
+	getPermissionsofUser(@MissionId() missionId: ObjectId, @Query('userId') userId: string): Observable<PERMISSION> {
 		return this.service.getPermissionsOfUser(missionId, userId);
 	}
 
@@ -69,8 +69,8 @@ export class MissionsController {
 	}
 
 	@Put(':id/')
-	updateMission(@MissionId() missionId: ObjectId, @Body() baseMission: Partial<BaseMission>): Observable<boolean> {
-		return this.service.updateBaseMission(missionId, baseMission);
+	updateMission(@MissionId() missionId: ObjectId, @Body() { name, description }: Partial<BaseMission>): Observable<boolean> {
+		return this.service.updateBaseMission(missionId, { name, description });
 	}
 
 	@Put(':id/reject-join-request')

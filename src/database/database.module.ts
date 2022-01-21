@@ -11,8 +11,7 @@ export const CONNECTION_STRING = 'CONNECTION_STRING';
 export const DATABASE_NAME = 'DATABASE_NAME';
 export const COLLECTION_NAME = 'COLLECTION_NAME';
 
-@Module({
-})
+@Module({})
 export class DatabaseModule {
 	private static rootOptions: DBOptions;
 	static forRoot(options: DBOptions): DynamicModule {
@@ -46,7 +45,7 @@ export class DatabaseModule {
 				{ provide: BaseRepository, useClass: BaseRepository },
 			],
 			exports: [
-				Collection, 
+				Collection,
 				BaseRepository
 			]
 		};

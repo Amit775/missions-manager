@@ -2,7 +2,7 @@ import { Body, Controller, createParamDecorator, ExecutionContext, Get, Post, Pu
 import { ObjectId } from 'mongodb';
 import { Observable } from 'rxjs';
 import { BaseGroup, Group } from 'src/models/group.model';
-import { Role } from 'src/models/permissions.model';
+import { ROLE } from 'src/models/permissions.model';
 import { GroupsService } from './groups.service';
 
 
@@ -10,8 +10,7 @@ export const GroupId = createParamDecorator((data: unknown, context: ExecutionCo
 	const request = context.switchToHttp().getRequest();
 	const { Id: groupId } = request.params;
 	return new ObjectId(groupId);
-})
-
+});
 
 @Controller('groups')
 export class GroupsController {
@@ -59,7 +58,7 @@ export class GroupsController {
 
 	@Put(':id/add-user')
 	public addUser(@GroupId() groupId: ObjectId, @Query('userId') userId: string): Observable<boolean> {
-		return this.service.addUserToGroup(groupId, { _id: userId, role: Role.MEMBER });
+		return this.service.addUserToGroup(groupId, { _id: userId, role: ROLE.MEMBER });
 	}
 	@Put(':id/remove-user')
 	public removeUser(@GroupId() groupId: ObjectId, @Query('userId') userId: string): Observable<boolean> {
@@ -68,7 +67,7 @@ export class GroupsController {
 
 	@Put(':id/accept-join-request')
 	public acceptJoinRequest(@GroupId() groupId: ObjectId, @Query('userId') userId: string): Observable<boolean> {
-		return this.service.acceptJoinRequest(groupId, { _id: userId, role: Role.MEMBER });
+		return this.service.acceptJoinRequest(groupId, { _id: userId, role: ROLE.MEMBER });
 	}
 
 	@Put(':id/reject-join-request')

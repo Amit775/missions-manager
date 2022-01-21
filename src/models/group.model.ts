@@ -1,18 +1,28 @@
+import { IsMongoId, MinLength, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 
-import { UserWithRole } from './user.model';
+import { UserId, UserWithRole } from './user.model';
 
-export interface GroupId {
-  _id: ObjectId;
+export class GroupId {
+	@IsMongoId()
+	_id: ObjectId;
 }
 
-export interface BaseGroup extends GroupId {
-  name: string;
-  description: string;
+export class BaseGroup extends GroupId {
+	@MinLength(1)
+	name: string;
+
+	@MinLength(1)
+	description: string;
 }
 
-export interface Group extends BaseGroup {
-  creator: string;
-  users: UserWithRole[];
-  joinRequests: string[];
+export class Group extends BaseGroup {
+	@MinLength(1)
+	creator: UserId['_id'];
+
+	@ValidateNested({ each: true })
+	users: UserWithRole[];
+
+	@MinLength(1)
+	joinRequests: UserId['_id'][];
 }

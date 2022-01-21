@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { map, Observable, switchMap } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { NotFoundError } from 'src/models/errors/error.model';
 import { BaseMission, Mission } from 'src/models/missions.model';
-import { Permission } from 'src/models/permissions.model';
+import { PERMISSION } from 'src/models/permissions.model';
 import { UserWithPermission } from 'src/models/user.model';
 import { BaseRepository } from '../database/base.repository';
 
@@ -32,7 +32,7 @@ export class MissionsService {
 	public getPermissionsOfUser(
 		missionId: ObjectId,
 		userId: string,
-	): Observable<Permission> {
+	): Observable<PERMISSION> {
 		return this.repository
 			.findOne$(missionId)
 			.pipe(
@@ -41,7 +41,7 @@ export class MissionsService {
 						if (!mission) throw new NotFoundError(`mission with id ${missionId}`);
 
 						const userInMission = mission.users.find((user) => user._id === userId);
-						if (!userInMission) return Permission.NONE;
+						if (!userInMission) return PERMISSION.NONE;
 
 						return userInMission.permission
 					}
