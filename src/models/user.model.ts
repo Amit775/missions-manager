@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsMongoId, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsMongoId, MinLength } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { PERMISSION, ROLE } from './permissions.model';
 

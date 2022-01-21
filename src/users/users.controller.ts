@@ -1,6 +1,6 @@
-import { Body, Controller, createParamDecorator, ExecutionContext, Get, Param, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, createParamDecorator, ExecutionContext, Get, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { User } from 'src/models/user.model';
+import { User, UserClaim } from 'src/models/user.model';
 import { UsersService } from './users.service';
 
 export const UserId = createParamDecorator(
@@ -14,9 +14,9 @@ export const UserId = createParamDecorator(
 @Controller('users')
 export class UsersController {
 	constructor(private service: UsersService) { }
-	
+
 	@Post('/')
-	public createUser(@Body() user: User): Observable<User> {
+	public createUser(@Body() user: UserClaim): Observable<User> {
 		return this.service.createUser(user);
 	}
 
@@ -26,7 +26,7 @@ export class UsersController {
 	}
 
 	@Get('with-ids')
-	public getUsersByIds(@Param('usersIds', new ParseArrayPipe()) usersIds: string[]): Observable<User[]> {
+	public getUsersByIds(@Query('ids', new ParseArrayPipe()) usersIds: string[]): Observable<User[]> {
 		return this.service.getUsersByIds(usersIds);
 	}
 

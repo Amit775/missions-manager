@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Observable } from 'rxjs';
 import { BaseRepository } from 'src/database/base.repository';
-import { User } from 'src/models/user.model';
+import { User, UserClaim } from 'src/models/user.model';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class UsersService {
-	constructor(private repository: BaseRepository<User, string>) { }
+	constructor(@Inject('usersRepository') private repository: BaseRepository<User, string>) { }
 
 	public getAllUsers(): Observable<User[]> {
 		return this.repository.find$();
@@ -36,7 +36,7 @@ export class UsersService {
 		return this.repository.updateOne$(userId, { $set: { hierarchy } });
 	}
 
-	public createUser(user: User): Observable<User> {
-		return this.repository.createOne$(user);
+	public createUser(user: UserClaim): Observable<User> {
+		return this.repository.createOne$({ ...user, isAdmin: false, organizationId: new ObjectId() });
 	}
 }

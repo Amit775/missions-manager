@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { map, Observable } from 'rxjs';
 import { NotFoundError } from 'src/models/errors/error.model';
@@ -9,7 +9,7 @@ import { BaseRepository } from '../database/base.repository';
 
 @Injectable()
 export class MissionsService {
-	constructor(private repository: BaseRepository<Mission>) { }
+	constructor(@Inject('missionsRepository') private repository: BaseRepository<Mission>) { }
 
 	public getAllMissions(): Observable<Mission[]> {
 		return this.repository.find$();

@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Provider, Scope } from '@nestjs/common';
 import { Collection, MongoClient } from 'mongodb';
 import { BaseRepository } from './base.repository';
 
@@ -11,51 +11,48 @@ export const CONNECTION_STRING = 'CONNECTION_STRING';
 export const DATABASE_NAME = 'DATABASE_NAME';
 export const COLLECTION_NAME = 'COLLECTION_NAME';
 
+const dboptions = {
+	uri: 'mongodb+srv://bublil:bublil@missions-manager.akbe9.mongodb.net/missions-manager?authSource=admin&replicaSet=atlas-s1148w-shard-0&w=majority&readPreference=primary&appname=mongodb-vscode%200.7.0&retryWrites=true&ssl=true',
+	name: 'missions-manager',
+};
+
+function createOptionsProviders(options: DBOptions): Provider[] {
+	return [
+		{ provide: CONNECTION_STRING, useValue: options.uri },
+		{ provide: DATABASE_NAME, useValue: options.name }
+	];
+}
+
+function createCollectionProvider(name: string): (uri: string, db: string) => Promise<Collection> {
+	return async (uri: string, db: string) => {
+		const client = await new MongoClient(uri).connect();
+		return client.db(db).collection(name);
+	}
+}
+
+function createFeatureConnectionProviders(name: string): Provider[] {
+	console.log(name);
+	return [{
+		provide: Collection,
+		useFactory: createCollectionProvider(name),
+		inject: [CONNECTION_STRING, DATABASE_NAME],
+		scope: Scope.TRANSIENT
+	}];
+}
+
 @Module({})
 export class DatabaseModule {
-	private static rootOptions: DBOptions;
-	static forRoot(options: DBOptions): DynamicModule {
-		DatabaseModule.rootOptions = options;
-		console.log('for root', options);
-		const optionsProviders = DatabaseModule.createProviders(options);
-		return {
-			module: DatabaseModule,
-			providers: optionsProviders,
-			exports: [CONNECTION_STRING, DATABASE_NAME]
-		};
-	}
-
-	static forFeature(name: string, options?: DBOptions): DynamicModule {
-		console.log('for feature', name, options);
-		const collectionProvider: Provider = {
-			provide: Collection,
-			useFactory: async (connectionString: string, dbname: string) => {
-				console.log('inside factory', name);
-				const client = await new MongoClient(options.uri ?? connectionString).connect();
-				return client.db(options.name ?? dbname).collection(name);
-			},
-			inject: [CONNECTION_STRING, DATABASE_NAME]
-		};
-
-		return {
-			module: DatabaseModule,
-			imports: [DatabaseModule.forRoot(DatabaseModule.rootOptions)],
-			providers: [
-				collectionProvider,
-				{ provide: BaseRepository, useClass: BaseRepository },
-			],
-			exports: [
-				Collection,
-				BaseRepository
-			]
-		};
-	}
-
-	private static createProviders(options: DBOptions): Provider[] {
-		console.log('createProviders', options);
-		return [
-			{ provide: CONNECTION_STRING, useValue: options.uri },
-			{ provide: DATABASE_NAME, useValue: options.name },
+	static forFeature(name: string, options: DBOptions = dboptions): DynamicModule {
+		const providers: Provider[] = [
+			...createOptionsProviders(options),
+			...createFeatureConnectionProviders(name),
+			{ provide: `${name}Repository`, useClass: BaseRepository }
 		];
+
+		return {
+			module: DatabaseModule,
+			providers,
+			exports: [`${name}Repository`]
+		};
 	}
 }
