@@ -5,12 +5,13 @@ import {
 	DeleteOptions,
 	Filter,
 	FindOptions,
+	InsertOneOptions,
 	ObjectId,
 	OptionalId,
 	UpdateFilter,
 	UpdateOptions
 } from 'mongodb';
-import { from, map, Observable } from 'rxjs';
+import { catchError, from, map, Observable, of, tap } from 'rxjs';
 
 export interface IReader<T, ID = ObjectId> {
 	findOne$(_id: ID, options?: FindOptions): Observable<T>;
@@ -37,13 +38,14 @@ export class BaseRepository<T, ID = ObjectId> implements IReader<T, ID>, IWriter
 		return from(this.collection.find(filter, options).toArray());
 	}
 
-	createOne$(item: T, options?: BulkWriteOptions): Observable<T> {
+	createOne$(item: T, options?: InsertOneOptions): Observable<T> {
 		return from(this.collection.insertOne(item as OptionalId<T>, options)).pipe(
 			map((result) => ({ ...item, _id: result.insertedId })),
 		);
 	}
 	create$(items: T[], options?: BulkWriteOptions): Observable<T[]> {
 		return from(this.collection.insertMany(items as OptionalId<T>[], options)).pipe(
+			catchError((error, caught) => of (error.result)),
 			map((result) => [
 				...items.map((item, index) => ({
 					...item,
@@ -52,7 +54,7 @@ export class BaseRepository<T, ID = ObjectId> implements IReader<T, ID>, IWriter
 			]),
 		);
 	}
-	updateOne$(_id: ID, update: UpdateFilter<T>, options?: UpdateOptions,): Observable<boolean> {
+	updateOne$(_id: ID, update: UpdateFilter<T>, options?: UpdateOptions): Observable<boolean> {
 		return from(this.collection.updateOne({ _id }, update, options)).pipe(
 			map((result) => result.acknowledged),
 		);

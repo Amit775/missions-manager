@@ -6,7 +6,7 @@ import { UsersService } from './users.service';
 export const UserId = createParamDecorator(
 	(data: unknown, context: ExecutionContext) => {
 		const request = context.switchToHttp().getRequest();
-		const { userId } = request.query;
+		const { id: userId } = request.params;
 		return userId;
 	}
 )
@@ -36,7 +36,7 @@ export class UsersController {
 	}
 
 	@Put(':id/')
-	public updateUserHierarchy(@UserId() userId: string, @Query('hierarchy') hierarchy: string): Observable<boolean> {
+	public updateUserHierarchy(@UserId() userId: string, @Body('hierarchy') hierarchy: string): Observable<boolean> {
 		return this.service.updateUserHierarchy(userId, hierarchy);
 	}
 }

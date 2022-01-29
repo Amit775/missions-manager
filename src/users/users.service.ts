@@ -1,12 +1,17 @@
 import { Inject, Injectable, Scope } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { Observable } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { BaseRepository } from 'src/database/base.repository';
+import { Org } from 'src/models/org.model';
 import { User, UserClaim } from 'src/models/user.model';
+import { OrgsService } from 'src/orgs/orgs.service';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class UsersService {
-	constructor(@Inject('usersRepository') private repository: BaseRepository<User, string>) { }
+	constructor(
+		@Inject('usersRepository') private repository: BaseRepository<User, string>,
+		private orgsService: OrgsService
+	) { }
 
 	public getAllUsers(): Observable<User[]> {
 		return this.repository.find$();
@@ -36,7 +41,14 @@ export class UsersService {
 		return this.repository.updateOne$(userId, { $set: { hierarchy } });
 	}
 
-	public createUser(user: UserClaim): Observable<User> {
-		return this.repository.createOne$({ ...user, isAdmin: false, organizationId: new ObjectId() });
+	public createUser(userClaim: UserClaim): Observable<User> {
+		const user: User = { ...userClaim, isAdmin: false, organizationId: null };
+		return this.orgsService.ensueHierarchyExist(userClaim.hierarchy).pipe(
+			switchMap((orgs: Org[]) => {
+				user.organizationId = orgs[orgs.length - 1]._id;
+				return this.repository.updateOne$(userClaim._id, { $set: user }, { upsert: true })
+			}),
+			map(() => user)
+		);
 	}
 }

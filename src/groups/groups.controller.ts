@@ -8,7 +8,7 @@ import { GroupsService } from './groups.service';
 
 export const GroupId = createParamDecorator((data: unknown, context: ExecutionContext) => {
 	const request = context.switchToHttp().getRequest();
-	const { Id: groupId } = request.params;
+	const { id: groupId } = request.params;
 	return new ObjectId(groupId);
 });
 
@@ -37,12 +37,12 @@ export class GroupsController {
 	}
 
 	@Put(':id/ask-to-join')
-	public askToJoin(@GroupId() groupId: ObjectId, userId: string): Observable<boolean> {
+	public askToJoin(@GroupId() groupId: ObjectId, @Query('userId') userId: string): Observable<boolean> {
 		return this.service.addUserToJoinRequest(new ObjectId(groupId), userId);
 	}
 
 	@Put(':id/cancel-join-request')
-	public cancelJoinRequest(@GroupId() groupId: ObjectId, userId: string): Observable<boolean> {
+	public cancelJoinRequest(@GroupId() groupId: ObjectId, @Query('userId') userId: string): Observable<boolean> {
 		return this.service.removeUserFromJoinRequest(new ObjectId(groupId), userId);
 	}
 
@@ -52,8 +52,8 @@ export class GroupsController {
 	}
 
 	@Put(':id/')
-	public updateGroup(@GroupId() groupId: ObjectId, @Body() baseGroup: BaseGroup) {
-		return this.service.updateGroup(groupId, baseGroup);
+	public updateGroup(@GroupId() groupId: ObjectId, @Body() { name, description }: Partial<BaseGroup>) {
+		return this.service.updateGroup(groupId, { name, description });
 	}
 
 	@Put(':id/add-user')

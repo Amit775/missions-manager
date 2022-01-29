@@ -3,12 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { UserId, UserWithRole } from './user.model';
 
-export class GroupId {
-	@IsMongoId()
-	_id: ObjectId;
-}
-
-export class BaseGroup extends GroupId {
+export class BaseGroup  {
 	@MinLength(1)
 	name: string;
 
@@ -17,6 +12,9 @@ export class BaseGroup extends GroupId {
 }
 
 export class Group extends BaseGroup {
+	@IsMongoId()
+	_id: ObjectId;
+
 	@MinLength(1)
 	creator: UserId['_id'];
 
